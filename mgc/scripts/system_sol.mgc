@@ -1,0 +1,16 @@
+system: {
+    name: "solar"
+    star: {
+        name: "sol"
+    }
+    planets: {
+        {
+            name: "earth"
+            resources: { iron: 1000 }
+        }
+        {
+            name: "pluto"
+            resources: { exotic: 1 }
+        }
+    }
+}
