@@ -9,23 +9,23 @@ open Mgc
 
 // SceneObject with renderer
 type SceneObjWR =
-    | MeshWR of SObjectData * SceneObjWR list * MeshRenderer
-    | ContainerWR of SObjectData * SceneObjWR list
+    | MeshWR of Transform * SceneObjWR list * MeshRenderer
+    | ContainerWR of Transform * SceneObjWR list
 
 type MainWindow(scene: SceneObject) =
     inherit GameWindow(800, 600, GraphicsMode.Default, "LearnOpenTK")
 
     let rec loadRenderer = function
-    | Mesh (m, d, lst) -> MeshWR (d, List.map loadRenderer lst, new MeshRenderer(m))
-    | Container (d, lst) -> ContainerWR (d, List.map loadRenderer lst)
+    | Mesh (m, tr, lst) -> MeshWR (tr, List.map loadRenderer lst, new MeshRenderer(m))
+    | Container (tr, lst) -> ContainerWR (tr, List.map loadRenderer lst)
 
     let rec render = function
-    | MeshWR (d, lst, r) -> r.Render d
+    | MeshWR (tr, lst, r) -> r.Render tr; List.iter render lst
     | ContainerWR (d, lst) -> List.iter render lst
 
     let rec unloadRenderer = function
-    | MeshWR (_, r) -> using r ignore
-    | ContainerWR lst -> List.iter unloadRenderer lst
+    | MeshWR (_, lst, r) -> using r ignore; List.iter unloadRenderer lst
+    | ContainerWR (_, lst) -> List.iter unloadRenderer lst
 
     let mutable sceneRenderer = None
 

@@ -19,7 +19,10 @@ let triangle = {
         0.0f; 0.5f; -1.0f; 1.0f; 1.0f; 1.0f;
     |]
 }
-let scene = Container [ Mesh rect;  Mesh triangle ]
+let scene = SceneObject.container [
+    Mesh (rect, Transform.identity, []);
+    Mesh (triangle, Transform.identity, [])
+]
 
 let wnd = new MainWindow(scene)
 wnd.Run 60.0

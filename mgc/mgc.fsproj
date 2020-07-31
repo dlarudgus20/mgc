@@ -6,9 +6,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="shaders/shader.frag" />
+    <None Include="shaders/shader.vert" />
+    <Compile Include="Transform.fs" />
     <Compile Include="Shader.fs" />
-    <Compile Include="SceneObject.fs" />
     <Compile Include="MeshRenderer.fs" />
+    <Compile Include="SceneObject.fs" />
     <Compile Include="MainWindow.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>

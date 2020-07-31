@@ -3,6 +3,12 @@ namespace Mgc
 open System
 open OpenTK.Graphics.OpenGL
 
+type MeshData = {
+    Shader: string
+    Mode: PrimitiveType
+    Vertices: single[]
+}
+
 type MeshRenderer private (vao: int, vbo: int, shader: Shader, count: int, mode: PrimitiveType, vertices: single[]) =
     let mutable disposed = false
     let dispose disposing =
@@ -11,7 +17,7 @@ type MeshRenderer private (vao: int, vbo: int, shader: Shader, count: int, mode:
             GL.BindBuffer (BufferTarget.ArrayBuffer, 0)
             GL.DeleteBuffer vbo
 
-    new (mesh: Mesh) =
+    new (mesh: MeshData) =
         let vao = GL.GenVertexArray ()
         let vbo = GL.GenBuffer ()
         let shader = Shader.ByName mesh.Shader
@@ -38,7 +44,7 @@ type MeshRenderer private (vao: int, vbo: int, shader: Shader, count: int, mode:
 
         new MeshRenderer(vao, vbo, shader, count, mesh.Mode, vertices)
 
-    member this.Render (data: SObjectData) =
+    member this.Render (data: Transform) =
         shader.Use ()
         GL.BindVertexArray vao
         GL.DrawArrays (mode, 0, count)

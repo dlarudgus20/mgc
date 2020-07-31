@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "mgc": {
+      "commandName": "Project",
+      "workingDirectory": "$(ProjectDir)"
+    }
+  }
+}
