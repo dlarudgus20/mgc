@@ -5,16 +5,15 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": ".NET Core Launch (console)",
-            "type": "coreclr",
+            "name": ".NET Framework Launch (console)",
+            "type": "clr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/mgc/bin/Debug/netcoreapp3.1/mgc.dll",
+            "program": "${workspaceFolder}/mgc/bin/Debug/net461/mgc.exe",
             "args": [],
-            "cwd": "${workspaceFolder}",
+            "cwd": "${workspaceFolder}/mgc",
             "stopAtEntry": false,
             "console": "integratedTerminal"
         }
-
     ]
 }

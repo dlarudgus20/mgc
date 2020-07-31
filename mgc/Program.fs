@@ -1,12 +1,25 @@
-open Mgc
-open Mgc.ScriptParser
+﻿open Mgc
 
-let script = """
+open OpenTK.Graphics.OpenGL
 
-"""
+let rect = {
+    Shader = ""; Mode = PrimitiveType.Triangles; Vertices = [|
+        -1.0f; -1.0f; 0.0f; 1.0f; 0.0f; 0.0f;
+        1.0f; -1.0f; 0.0f; 0.0f; 0.0f; 1.0f;
+        -1.0f; 1.0f; 0.0f; 1.0f; 0.0f; 0.0f;
+        -1.0f; 1.0f; 0.0f; 1.0f; 0.0f; 0.0f;
+        1.0f; -1.0f; 0.0f; 0.0f; 0.0f; 1.0f;
+        1.0f; 1.0f; 0.0f; 0.0f; 0.0f; 1.0f;
+    |]
+}
+let triangle = {
+    Shader = ""; Mode = PrimitiveType.Triangles; Vertices = [|
+        -0.5f; -0.5f; -1.0f; 1.0f; 1.0f; 1.0f;
+        0.5f; -0.5f; -1.0f; 1.0f; 1.0f; 1.0f;
+        0.0f; 0.5f; -1.0f; 1.0f; 1.0f; 1.0f;
+    |]
+}
+let scene = Container [ Mesh rect;  Mesh triangle ]
 
-let parser = createRecordTBlock typeof<System>
-let result = parseString (byType parser) script
-
-printfn "%A" parser
-printfn "%A" result
+let wnd = new MainWindow(scene)
+wnd.Run 60.0
