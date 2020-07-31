@@ -38,7 +38,7 @@ type MeshRenderer private (vao: int, vbo: int, shader: Shader, count: int, mode:
 
         new MeshRenderer(vao, vbo, shader, count, mesh.Mode, vertices)
 
-    member this.Render () =
+    member this.Render (data: SObjectData) =
         shader.Use ()
         GL.BindVertexArray vao
         GL.DrawArrays (mode, 0, count)
