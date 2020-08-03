@@ -1,4 +1,5 @@
 ﻿open Mgc
+open Mgc.StateBuilder
 open Mgc.Transform
 open Mgc.SceneObject
 
@@ -22,10 +23,11 @@ let triangle = new MeshData ("", PrimitiveType.Triangles, [|
 
 let triangleScript: float SceneObjectScript =
     { emptyWith 0.0 with
-        Update = (fun x delta -> State (fun state ->
-            let s = state + delta * 4.0
-            let transform = identity |> rotateZ (single s) |> translate3 0.3f 0.3f 0.0f
-            { x with Transform = transform }, s))
+        Update = (fun x delta -> state {
+            let! state = State.update (fun s -> s + delta * 4.0)
+            let transform = identity |> rotateZ (single state) |> translate3 0.3f 0.3f 0.0f
+            return { x with Transform = transform }
+        })
     }
 
 let scene = container emptyScript identity [
