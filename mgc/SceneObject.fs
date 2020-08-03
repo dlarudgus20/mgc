@@ -4,20 +4,36 @@ type SceneObjectType =
     | Mesh of MeshData
     | Container
 
-type SceneObjectScript = {
-    Update: SceneObject -> float -> SceneObject
+type IScriptObjectExecutor =
+    abstract member Update: SceneObject -> float -> SceneObject
+and 's SceneObjectScript = {
+    Load: unit -> 's
+    Update: SceneObject -> float -> State<'s, SceneObject>
 }
 and SceneObject = {
     Type: SceneObjectType
     Transform: Transform
     Children: SceneObject list
-    Script: SceneObjectScript
+    Script: IScriptObjectExecutor
 }
 
+type 's ScriptObjectExecutor(script: 's SceneObjectScript) =
+    let mutable state = script.Load ()
+    interface IScriptObjectExecutor with
+        member this.Update o x =
+            let (o', s) = State.run (script.Update o x) state
+            state <- s
+            o'
+
 module SceneObject =
-    let emptyScript = {
-        Update = (fun x _ -> x)
+    let emptyWith initial = {
+        Load = fun () -> initial
+        Update = fun x _ -> State.ofValue x
     }
+
+    let script script = ScriptObjectExecutor script :> IScriptObjectExecutor
+
+    let emptyScript = script (emptyWith ())
 
     let container script transform children = {
         Type = Container

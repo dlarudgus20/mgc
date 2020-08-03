@@ -37,7 +37,8 @@ type MainWindow(scene: SceneObject) =
     let rec updateRenderer deltaTime obj =
         let updated = obj.Script.Update obj deltaTime
         loadOne updated
-        { updated with Children = List.map (updateRenderer deltaTime) obj.Children }
+        let children = List.map (updateRenderer deltaTime) updated.Children
+        { updated with Children = children }
 
     override this.OnLoad e =
         GL.ClearColor (0.0f, 0.0f, 0.0f, 1.0f)

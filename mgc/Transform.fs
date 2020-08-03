@@ -46,13 +46,10 @@ module Transform =
         let t = Matrix4.CreateTranslation tr.Position
         let r = Matrix4.CreateFromQuaternion tr.Rotation
         let s = Matrix4.CreateScale tr.Scale
-        t * r * s
+        // OpenTK matrix multiplication order is reversed by its historical reason
+        // translation * rotation * scaling
+        s * r * t
 
-    //let composite a b =
-    //    let p = a.Position + (rotateVector a.Rotation (a.Scale * b.Position))
-    //    let r = a.Rotation * b.Rotation
-    //    let s = (rotateVector b.Rotation a.Scale) * b.Scale
-    //    { Position = p; Rotation = r; Scale = s }
     let composite a b =
         translate a.Position (rotate a.Rotation (scale a.Scale b))
 
