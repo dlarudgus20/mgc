@@ -3,26 +3,23 @@ namespace Mgc
 open System
 open OpenTK.Graphics.OpenGL
 
-type MeshData = {
-    Shader: string
+type MeshRenderData = {
+    VAO: int
+    VBO: int
+    Shader: Shader
+    Count: int
     Mode: PrimitiveType
     Vertices: single[]
 }
 
-type MeshRenderer private (vao: int, vbo: int, shader: Shader, count: int, mode: PrimitiveType, vertices: single[]) =
-    let mutable disposed = false
-    let dispose disposing =
-        if not disposed then
-            disposed <- true
-            GL.BindBuffer (BufferTarget.ArrayBuffer, 0)
-            GL.DeleteBuffer vbo
+type MeshData (shader: string, mode: PrimitiveType, vertices: single[]) =
+    let mutable data = None
 
-    new (mesh: MeshData) =
+    let bake () =
         let vao = GL.GenVertexArray ()
         let vbo = GL.GenBuffer ()
-        let shader = Shader.ByName mesh.Shader
+        let shader = Shader.ByName shader
         let layout = shader.VerticesLayout
-        let vertices = mesh.Vertices
 
         let stride = List.sum layout
         let count = (Array.length vertices) / stride
@@ -42,12 +39,44 @@ type MeshRenderer private (vao: int, vbo: int, shader: Shader, count: int, mode:
         attrib 0 0 layout
         GL.BindVertexArray 0
 
-        new MeshRenderer(vao, vbo, shader, count, mesh.Mode, vertices)
+        {
+            VAO = vao
+            VBO = vbo
+            Shader = shader
+            Count = count
+            Mode = mode
+            Vertices = vertices
+        }
 
-    member this.Render (data: Transform) =
-        shader.Use ()
-        GL.BindVertexArray vao
-        GL.DrawArrays (mode, 0, count)
+    let unbake () =
+        data |> Option.iter (fun d ->
+            GL.BindBuffer (BufferTarget.ArrayBuffer, 0)
+            GL.DeleteBuffer d.VBO
+            data <- None)
+
+    let mutable disposed = false
+    let dispose disposing =
+        if not disposed then
+            disposed <- true
+            unbake ()
+
+    member this.Bake () =
+        match data with
+        | Some d -> ()
+        | None -> data <- Some (bake ()); ()
+
+    member this.Unbake () = unbake ()
+
+    member this.IsBaked = data.IsSome
+
+    member this.Render (transform: Transform) =
+        match data with
+        | Some d ->
+            d.Shader.Use ()
+            d.Shader.SetUniform ("vmMatrix", Transform.toMatrix transform)
+            GL.BindVertexArray d.VAO
+            GL.DrawArrays (d.Mode, 0, d.Count)
+        | None -> failwith "MeshData is not baked"
 
     override this.Finalize () = dispose false
     interface IDisposable with member this.Dispose () = dispose true

@@ -3,6 +3,7 @@ namespace Mgc
 open System
 open System.IO
 open System.Text
+open OpenTK
 open OpenTK.Graphics.OpenGL
 
 type Shader(name: string, layout: int list) =
@@ -72,6 +73,21 @@ type Shader(name: string, layout: int list) =
         shaderInUsing <- None
         GL.UseProgram 0
     static member UseByName name = (Shader.ByName name).Use ()
+
+    member this.SetUniform (name: string, value: single) =
+        GL.Uniform1 (GL.GetUniformLocation (program, name), value)
+    member this.SetUniform (name: string, value: Vector2) =
+        GL.Uniform2 (GL.GetUniformLocation (program, name), value)
+    member this.SetUniform (name: string, value: Vector3) =
+        GL.Uniform3 (GL.GetUniformLocation (program, name), value)
+    member this.SetUniform (name: string, value: Vector4) =
+        GL.Uniform4 (GL.GetUniformLocation (program, name), value)
+    member this.SetUniform (name: string, value: Matrix2) =
+        let mutable v = value in GL.UniformMatrix2 (GL.GetUniformLocation (program, name), false, &v)
+    member this.SetUniform (name: string, value: Matrix3) =
+        let mutable v = value in GL.UniformMatrix3 (GL.GetUniformLocation (program, name), false, &v)
+    member this.SetUniform (name: string, value: Matrix4) =
+        let mutable v = value in GL.UniformMatrix4 (GL.GetUniformLocation (program, name), false, &v)
 
     member this.Use () =
         if shaderInUsing <> Some this then

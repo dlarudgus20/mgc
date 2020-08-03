@@ -7,43 +7,53 @@ open OpenTK.Graphics.OpenGL
 
 open Mgc
 
-// SceneObject with renderer
-type SceneObjWR =
-    | MeshWR of Transform * SceneObjWR list * MeshRenderer
-    | ContainerWR of Transform * SceneObjWR list
-
 type MainWindow(scene: SceneObject) =
-    inherit GameWindow(800, 600, GraphicsMode.Default, "LearnOpenTK")
+    inherit GameWindow(800, 600,
+        GraphicsMode(ColorFormat(32), 24, 0, 8),
+        "LearnOpenTK")
 
-    let rec loadRenderer = function
-    | Mesh (m, tr, lst) -> MeshWR (tr, List.map loadRenderer lst, new MeshRenderer(m))
-    | Container (tr, lst) -> ContainerWR (tr, List.map loadRenderer lst)
+    let mutable currentScene = scene
 
-    let rec render = function
-    | MeshWR (tr, lst, r) -> r.Render tr; List.iter render lst
-    | ContainerWR (d, lst) -> List.iter render lst
+    let loadOne obj =
+        match obj.Type with
+        | Mesh m -> m.Bake ()
+        | Container -> ()
+    let rec loadRenderer obj =
+        loadOne obj
+        List.iter loadRenderer obj.Children
 
-    let rec unloadRenderer = function
-    | MeshWR (_, lst, r) -> using r ignore; List.iter unloadRenderer lst
-    | ContainerWR (_, lst) -> List.iter unloadRenderer lst
+    let rec renderRecursive obj =
+        match obj.Type with
+        | Mesh m -> m.Render obj.Transform
+        | Container -> ()
+        List.iter renderRecursive obj.Children
 
-    let mutable sceneRenderer = None
+    let rec unloadRenderer renderer =
+        match renderer.Type with
+        | Mesh m -> m.Unbake ()
+        | Container -> ()
+        List.iter unloadRenderer renderer.Children
+
+    let rec updateRenderer deltaTime obj =
+        let updated = obj.Script.Update obj deltaTime
+        loadOne updated
+        { updated with Children = List.map (updateRenderer deltaTime) obj.Children }
 
     override this.OnLoad e =
         GL.ClearColor (0.0f, 0.0f, 0.0f, 1.0f)
         List.iter GL.Enable [
+            EnableCap.Multisample;
             EnableCap.AlphaTest;
             EnableCap.Blend;
             EnableCap.CullFace;
             EnableCap.DepthTest
         ]
-        sceneRenderer <- Some (loadRenderer scene)
+        loadRenderer currentScene
         base.OnLoad e
 
     override this.OnUnload e =
         Shader.DisposeShaders ()
-        sceneRenderer |> Option.iter unloadRenderer
-        sceneRenderer <- None
+        unloadRenderer currentScene
         base.OnUnload e
 
     override this.OnResize e =
@@ -51,12 +61,11 @@ type MainWindow(scene: SceneObject) =
         base.OnResize e
 
     override this.OnUpdateFrame e =
+        currentScene <- updateRenderer e.Time currentScene
         base.OnUpdateFrame e
 
     override this.OnRenderFrame e =
         GL.Clear (ClearBufferMask.ColorBufferBit ||| ClearBufferMask.DepthBufferBit)
-
-        sceneRenderer |> Option.iter render
-
+        renderRecursive currentScene
         this.Context.SwapBuffers ()
         base.OnRenderFrame e
