@@ -2,6 +2,7 @@ namespace Mgc
 
 type SceneObjectType =
     | Mesh of MeshData
+    | Camera of CameraData
     | Container
 
 type IScriptObjectExecutor =
@@ -35,16 +36,13 @@ module SceneObject =
 
     let emptyScript = script (emptyWith ())
 
-    let container script transform children = {
-        Type = Container
+    let object t script transform children = {
+        Type = t
         Transform = transform
         Children = children
         Script = script
     }
 
-    let mesh data script transform children = {
-        Type = Mesh data
-        Transform = transform
-        Children = children
-        Script = script
-    }
+    let container script = object Container script
+    let mesh data = object (Mesh data)
+    let camera data = object (Camera data)

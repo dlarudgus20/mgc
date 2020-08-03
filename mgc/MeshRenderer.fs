@@ -73,7 +73,7 @@ type MeshData (shader: string, mode: PrimitiveType, vertices: single[]) =
         match data with
         | Some d ->
             d.Shader.Use ()
-            d.Shader.SetUniform ("vmMatrix", Transform.toMatrix transform)
+            d.Shader.SetUniform ("modelMatrix", Transform.toMatrix transform)
             GL.BindVertexArray d.VAO
             GL.DrawArrays (d.Mode, 0, d.Count)
         | None -> failwith "MeshData is not baked"

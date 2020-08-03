@@ -17,7 +17,7 @@ type MainWindow(scene: SceneObject) =
     let loadOne obj =
         match obj.Type with
         | Mesh m -> m.Bake ()
-        | Container -> ()
+        | _ -> ()
     let rec loadRenderer obj =
         loadOne obj
         List.iter loadRenderer obj.Children
@@ -25,13 +25,14 @@ type MainWindow(scene: SceneObject) =
     let rec renderRecursive obj =
         match obj.Type with
         | Mesh m -> m.Render obj.Transform
+        | Camera c -> c.Apply (Shader.ByName "") obj.Transform
         | Container -> ()
         List.iter renderRecursive obj.Children
 
     let rec unloadRenderer renderer =
         match renderer.Type with
         | Mesh m -> m.Unbake ()
-        | Container -> ()
+        | _ -> ()
         List.iter unloadRenderer renderer.Children
 
     let rec updateRenderer deltaTime obj =

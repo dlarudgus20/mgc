@@ -11,6 +11,7 @@
     <Compile Include="State.fs" />
     <Compile Include="Transform.fs" />
     <Compile Include="Shader.fs" />
+    <Compile Include="CameraData.fs" />
     <Compile Include="MeshRenderer.fs" />
     <Compile Include="SceneObject.fs" />
     <Compile Include="MainWindow.fs" />
