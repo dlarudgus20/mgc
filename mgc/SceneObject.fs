@@ -13,6 +13,7 @@ and 's SceneObjectScript = {
 }
 and SceneObject = {
     Type: SceneObjectType
+    Enabled: bool
     Transform: Transform
     Children: SceneObject list
     Script: IScriptObjectExecutor
@@ -38,6 +39,7 @@ module SceneObject =
 
     let object t script transform children = {
         Type = t
+        Enabled = true
         Transform = transform
         Children = children
         Script = script

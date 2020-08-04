@@ -7,12 +7,25 @@ open OpenTK.Graphics.OpenGL
 
 open Mgc
 
+type RenderContext = {
+    Camera: SceneObject
+    CameraData: CameraData
+}
+
 type MainWindow(scene: SceneObject) =
     inherit GameWindow(800, 600,
         GraphicsMode(ColorFormat(32), 24, 0, 8),
         "LearnOpenTK")
 
+    let defaultCameraData =
+        CameraData.ortho -1.0f 1.0f -1.0f 1.0f -1.0f 1.0f
+    let defaultCamera =
+        SceneObject.camera defaultCameraData SceneObject.emptyScript Transform.identity []
+
     let mutable currentScene = scene
+    let mutable currentContext = {
+        Camera = defaultCamera; CameraData = defaultCameraData
+    }
 
     let loadOne obj =
         match obj.Type with
@@ -23,10 +36,11 @@ type MainWindow(scene: SceneObject) =
         List.iter loadRenderer obj.Children
 
     let rec renderRecursive obj =
-        match obj.Type with
-        | Mesh m -> m.Render obj.Transform
-        | Camera c -> c.Apply (Shader.ByName "") obj.Transform
-        | Container -> ()
+        if obj.Enabled then
+            match obj.Type with
+            | Mesh m -> m.Render obj.Transform
+            | Camera c -> c.Apply (Shader.ByName "") obj.Transform
+            | Container -> ()
         List.iter renderRecursive obj.Children
 
     let rec unloadRenderer renderer =
@@ -36,8 +50,13 @@ type MainWindow(scene: SceneObject) =
         List.iter unloadRenderer renderer.Children
 
     let rec updateRenderer deltaTime obj =
-        let updated = obj.Script.Update obj deltaTime
-        loadOne updated
+        let updated =
+            if obj.Enabled then
+                let x = obj.Script.Update obj deltaTime
+                loadOne x
+                x
+            else
+                obj
         let children = List.map (updateRenderer deltaTime) updated.Children
         { updated with Children = children }
 
@@ -51,6 +70,7 @@ type MainWindow(scene: SceneObject) =
             EnableCap.DepthTest
         ]
         loadRenderer currentScene
+        currentScene <- updateRenderer 0.0 currentScene
         base.OnLoad e
 
     override this.OnUnload e =
