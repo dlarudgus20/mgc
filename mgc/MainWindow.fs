@@ -27,19 +27,24 @@ type MainWindow(scene: SceneObject) =
         Camera = defaultCamera; CameraData = defaultCameraData
     }
 
-    let loadOne obj =
+    let loadOne ctx obj =
         match obj.Type with
-        | Mesh m -> m.Bake ()
-        | _ -> ()
-    let rec loadRenderer obj =
-        loadOne obj
-        List.iter loadRenderer obj.Children
+        | Mesh m -> m.Bake (); ctx
+        | Camera c -> { ctx with Camera = obj; CameraData = c }
+        | Container -> ctx
+    let rec loadRenderer ctx obj =
+        let ctx' = loadOne ctx obj
+        List.fold loadRenderer ctx' obj.Children
+
+    let renderContextApply ctx =
+        let c = ctx.CameraData
+        c.Apply (Shader.ByName "") ctx.Camera.Transform
 
     let rec renderRecursive obj =
         if obj.Enabled then
             match obj.Type with
             | Mesh m -> m.Render obj.Transform
-            | Camera c -> c.Apply (Shader.ByName "") obj.Transform
+            | Camera c -> ()
             | Container -> ()
         List.iter renderRecursive obj.Children
 
@@ -49,16 +54,16 @@ type MainWindow(scene: SceneObject) =
         | _ -> ()
         List.iter unloadRenderer renderer.Children
 
-    let rec updateRenderer deltaTime obj =
-        let updated =
+    let rec updateRenderer deltaTime ctx obj =
+        let ctx', obj' =
             if obj.Enabled then
-                let x = obj.Script.Update obj deltaTime
-                loadOne x
-                x
+                let obj' = obj.Script.Update obj deltaTime
+                let ctx' = loadOne ctx obj'
+                ctx', obj'
             else
-                obj
-        let children = List.map (updateRenderer deltaTime) updated.Children
-        { updated with Children = children }
+                ctx, obj
+        let children, ctx'' = List.mapFold (updateRenderer deltaTime) ctx' obj'.Children
+        { obj' with Children = children }, ctx''
 
     override this.OnLoad e =
         GL.ClearColor (0.0f, 0.0f, 0.0f, 1.0f)
@@ -69,8 +74,10 @@ type MainWindow(scene: SceneObject) =
             EnableCap.CullFace;
             EnableCap.DepthTest
         ]
-        loadRenderer currentScene
-        currentScene <- updateRenderer 0.0 currentScene
+        loadRenderer currentContext currentScene |> ignore
+        let s, c = updateRenderer 0.0 currentContext currentScene
+        currentScene <- s
+        currentContext <- c
         base.OnLoad e
 
     override this.OnUnload e =
@@ -83,11 +90,14 @@ type MainWindow(scene: SceneObject) =
         base.OnResize e
 
     override this.OnUpdateFrame e =
-        currentScene <- updateRenderer e.Time currentScene
+        let s, c = updateRenderer e.Time currentContext currentScene
+        currentScene <- s
+        currentContext <- c
         base.OnUpdateFrame e
 
     override this.OnRenderFrame e =
         GL.Clear (ClearBufferMask.ColorBufferBit ||| ClearBufferMask.DepthBufferBit)
+        renderContextApply currentContext
         renderRecursive currentScene
         this.Context.SwapBuffers ()
         base.OnRenderFrame e
