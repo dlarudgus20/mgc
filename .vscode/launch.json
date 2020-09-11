@@ -9,9 +9,9 @@
             "type": "clr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/mgc/bin/Debug/net461/mgc.exe",
+            "program": "${workspaceFolder}/xyria/bin/Debug/net461/xyria.exe",
             "args": [],
-            "cwd": "${workspaceFolder}/mgc",
+            "cwd": "${workspaceFolder}/xyria",
             "stopAtEntry": false,
             "console": "integratedTerminal"
         }

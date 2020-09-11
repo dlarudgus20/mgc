@@ -6,11 +6,6 @@ open Mgc.SceneObject
 open OpenTK
 open OpenTK.Graphics.OpenGL
 
-//let mycam = CameraData.ortho -1.0f 1.0f -1.0f 1.0f -1.0f 1.0f
-//let campos = identity |> translate3 0.0f 0.0f 0.0f
-let mycam = CameraData.perspective 2.0f 1.0f 0.1f 10.0f
-let campos = identity |> translate3 0.0f 0.0f -2.0f
-
 let rect = new MeshData ("", PrimitiveType.Triangles, [|
         -1.0f; -1.0f; 0.0f; 1.0f; 0.0f; 0.0f;
         1.0f; -1.0f; 0.0f; 0.0f; 0.0f; 1.0f;
@@ -36,7 +31,6 @@ let triangleScript: float SceneObjectScript =
     }
 
 let scene = container emptyScript identity [
-    camera mycam emptyScript campos [];
     mesh rect emptyScript (identity |> scale3 0.05f 0.05f 0.0f |> translate3 0.3f 0.3f 0.5f) [];
     mesh triangle (script triangleScript) identity []
 ]
