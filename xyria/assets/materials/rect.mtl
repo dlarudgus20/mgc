@@ -1,0 +1,7 @@
+newmtl rect
+Ka 0.0 1.0 0.0
+Kd 0.0 0.0 0.0
+Ks 0.0 0.0 0.0
+d 1.0
+Ni 1.45
+illum 2

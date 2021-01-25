@@ -7,7 +7,7 @@ open OpenTK
 open OpenTK.Graphics.OpenGL
 
 type Shader(name: string, layout: int list) =
-    static let shaderDirectory = "shaders"
+    static let shaderDirectory = "assets/shaders"
     static let defaultShader = "shader"
     static let shaderList = [
         defaultShader, [ 3; 3 ]
